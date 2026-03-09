@@ -890,9 +890,8 @@ def test_pre_hook_receives_messages_via_run_context():
     assert captured_messages[1].role == "user"
     assert captured_messages[1].content == "Hello"
     assert captured_messages[2].role == "assistant"
-    # Verify it's a copy (not the same reference), so hook mutations don't affect the run
-    assert captured_messages is not run_context.messages
-    assert captured_messages == run_context.messages
+    # run_context.messages is a live reference — same object as the run's message list
+    assert captured_messages is run_context.messages
 
 
 def test_pre_hook_messages_is_none_when_no_run_context():
@@ -948,9 +947,8 @@ async def test_async_pre_hook_receives_messages_via_run_context():
     assert captured_messages is not None
     assert len(captured_messages) == 2
     assert captured_messages[0].content == "What is the weather?"
-    # Verify it's a copy (not the same reference), so hook mutations don't affect the run
-    assert captured_messages is not run_context.messages
-    assert captured_messages == run_context.messages
+    # run_context.messages is a live reference — same object as the run's message list
+    assert captured_messages is run_context.messages
 
 
 def test_post_hook_receives_messages_via_run_context():
@@ -979,9 +977,8 @@ def test_post_hook_receives_messages_via_run_context():
     assert captured_messages is not None
     assert len(captured_messages) == 1
     assert captured_messages[0].content == "Do something"
-    # Verify it's a copy (not the same reference), so hook mutations don't affect the run
-    assert captured_messages is not run_context.messages
-    assert captured_messages == run_context.messages
+    # run_context.messages is a live reference — same object as the run's message list
+    assert captured_messages is run_context.messages
 
 
 def test_tool_hook_receives_messages_via_run_context():
@@ -1014,6 +1011,5 @@ def test_tool_hook_receives_messages_via_run_context():
     assert captured_messages is not None
     assert len(captured_messages) == 1
     assert captured_messages[0].content == "Use the tool"
-    # Verify it's a copy (not the same reference), so hook mutations don't affect the run
-    assert captured_messages is not run_context.messages
-    assert captured_messages == run_context.messages
+    # run_context.messages is a live reference — same object as the run's message list
+    assert captured_messages is run_context.messages
