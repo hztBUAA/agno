@@ -137,15 +137,15 @@ def test_member_tool_hook_receives_messages():
     assert captured_messages["tool_hook"]["has_user"] is True
 
 
-def test_hook_sees_live_messages_in_team():
-    """Test that run_context.messages is a live reference in team member hooks."""
-    seen_roles: list = []
+def test_mutation_does_not_affect_team_run():
+    """Test that mutating run_context.messages in a hook does not corrupt the team run."""
 
-    def inspecting_hook(run_context: RunContext, fc: FunctionCall):
+    def mutating_hook(run_context: RunContext, fc: FunctionCall):
         if run_context.messages:
-            seen_roles.extend(m.role for m in run_context.messages)
+            run_context.messages.clear()
+            run_context.messages.append(Message(role="user", content="INJECTED"))
 
-    @tool(pre_hook=inspecting_hook)
+    @tool(pre_hook=mutating_hook)
     def get_temperature(city: str) -> str:
         """Get the temperature for a city."""
         return f"25C in {city}"
@@ -168,7 +168,6 @@ def test_hook_sees_live_messages_in_team():
     response = team.run("What is the temperature in Sydney?")
 
     assert response.content is not None
-    assert "user" in seen_roles
 
 
 @pytest.mark.asyncio

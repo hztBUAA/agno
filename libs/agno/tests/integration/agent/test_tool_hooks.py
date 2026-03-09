@@ -237,15 +237,15 @@ def test_tool_hook_receives_messages():
     assert captured_messages["tool_hook"]["has_user"] is True
 
 
-def test_hook_sees_live_messages():
-    """Test that run_context.messages is a live reference to the run's message list."""
-    seen_roles: list = []
+def test_hook_mutation_does_not_affect_run():
+    """Test that mutating run_context.messages in a hook does not corrupt the agent run."""
 
-    def inspecting_hook(run_context: RunContext, fc: FunctionCall):
+    def mutating_hook(run_context: RunContext, fc: FunctionCall):
         if run_context.messages:
-            seen_roles.extend(m.role for m in run_context.messages)
+            run_context.messages.clear()
+            run_context.messages.append(Message(role="user", content="INJECTED"))
 
-    @tool(pre_hook=inspecting_hook)
+    @tool(pre_hook=mutating_hook)
     def square(n: int) -> int:
         """Return n squared."""
         return n * n
@@ -257,8 +257,6 @@ def test_hook_sees_live_messages():
     assert response.tools is not None
     assert response.tools[0].tool_name == "square"
     assert response.tools[0].result == "25"
-    # Hook should have seen at least system and user messages
-    assert "user" in seen_roles
 
 
 @pytest.mark.asyncio
